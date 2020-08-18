@@ -1,0 +1,28 @@
+{
+  "name": "wender",
+  "version": "2.1.0",
+  "description": "Typescript Boilerplate for FiveM",
+  "main": "index.js",
+  "repository": "",
+  "author": "wender",
+  "scripts": {
+    "build": "webpack --mode production",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "start": "webpack --mode development --watch true"
+  },
+  "dependencies": {
+    "@citizenfx/client": "^1.0.2844-1",
+    "@citizenfx/server": "^1.0.2844-1",
+    "@types/node": "^13.9.5"
+  },
+  "bin": {
+    "webpack": "./node_modules/.bin/webpack"
+  },
+  "devDependencies": {
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  }
+}
