@@ -1,6 +1,41 @@
 import { garages } from "../../config"
 import { f } from "../../utils";
 
+export class Garage {
+    id: string
+    name: string
+    location: Location
+    distance?: number
+    markers: Location[]
+
+    constructor(id, name, location, markers, entity) {
+        id = id
+        name = name
+        location = location
+        markers = markers
+
+        this.updateDistances(location, markers, entity)
+    }
+
+    updateDistances(entity, location, markers) {
+        const [eX, eY, eZ] = GetEntityCoords(entity)
+
+        this.distance = GetDistanceBetweenCoords(location.x, location.y, location.z, eX, eY, eZ, false)
+
+        this.markers.map(marker => {
+            return {
+                distance: GetDistanceBetweenCoords(marker.x, marker.y, marker.z, eX, eY, eZ, false),
+            }
+        })
+    }
+
+    drawMarkers() {
+        this.markers.forEach(mark =>
+            drawGarageMarker(mark.x, mark.y, mark.z)
+        )
+    }
+}
+
 /**
 *  check is player next to a garage with a car
 * @returns boolean if is with a car in a garage
@@ -38,13 +73,7 @@ export function getGaragesWithDistanceAndArea(entity: number) {
         return {
             id: garage.id,
             distance: GetDistanceBetweenCoords(garage.location.x, garage.location.y, garage.location.z, eX, eY, eZ, false),
-            area: garage.location.area,
-            markers: garage.markers.map(marker => {
-                return {
-                    distance: GetDistanceBetweenCoords(marker.x, marker.y, marker.z, eX, eY, eZ, false),
-                    area: marker.area
-                }
-            })
+            area: garage.location.area
         }
     })
 }
@@ -55,7 +84,7 @@ export function getGaragesWithDistanceAndArea(entity: number) {
 * @returns garages with id, distance and area
 */
 export function getGarageInArea(entity: number) {
-    return getGaragesWithDistanceAndArea(entity).find(garage => garage.distance <= f(garage.area))?.id || null
+    return getGaragesWithDistanceAndArea(entity).find(garage => garage.distance <= f(garage.area)).id || null
 }
 
 /**
@@ -72,16 +101,22 @@ export function getGarage(id: string) {
 * @param id garage identification
 * @returns garages detail, markers and name
 */
-export function isInGarageMarkerArea(markers: Location[]) {
-    return markers.some(marker => marker.distance <= f(marker.area))
+export function isInGarageMarkerArea() {
+    const [eX, eY, eZ] = GetEntityCoords(PlayerPedId())
+    return getGarage(getGarageInArea(PlayerPedId())).markers.map(marker => {
+        return {
+            distance: GetDistanceBetweenCoords(marker.x, marker.y, marker.z, eX, eY, eZ, false),
+            area: marker.area
+        }
+    }).some(marker => marker.distance <= f(marker.area))
 }
 
 /**
 *  draw each garage marker in a garage
 * @param markers array of locations
 */
-export function drawGarageMarkers(markers: Location[]): void {
-    markers.forEach(mark =>
+export function drawGarageMarkers(): void {
+    getGarage(getGarageInArea(PlayerPedId())).markers.forEach(mark =>
         drawGarageMarker(mark.x, mark.y, mark.z)
     )
 }
