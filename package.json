@@ -14,7 +14,8 @@
   "dependencies": {
     "@citizenfx/client": "^1.0.2844-1",
     "@citizenfx/server": "^1.0.2844-1",
-    "@types/node": "^13.9.5"
+    "@types/node": "^13.9.5",
+    "rxjs": "^6.6.2"
   },
   "bin": {
     "webpack": "./node_modules/.bin/webpack"

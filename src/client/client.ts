@@ -1,31 +1,45 @@
-import { garages } from '../config'
-import { sleep, f, drawText } from '../utils';
+import { Observable, BehaviorSubject } from 'rxjs'
+import { distinctUntilChanged } from 'rxjs/operators';
+import { isInGarageArea, drawGarageMarkers, getGarageInArea, getGarage, isInGarageMarkerArea, isPedInGarageWithaCar } from './src/garage'
+
+var isInGarage = new BehaviorSubject<boolean>(false)
+var isMechanic = new BehaviorSubject<boolean>(false)
 
 async function startup() {
 
-    const ped = PlayerPedId()
+    isInGarage.next(isPedInGarageWithaCar())
 
-    if (IsPedAPlayer(ped) && IsPedSittingInAnyVehicle(ped)) {
+    if (!isInGarage.value) return
+    const garage = getGarageInArea(PlayerPedId())
 
-        const veh = GetVehiclePedIsUsing(ped)
-        const entity = GetEntityModel(veh)
+    if (!garage) return console.log('is not a garage!')
 
-        if (IsThisModelACar(entity)) {
+    if (isMechanic.value) console.log('é mecanico')
 
-            const [x, y, z] = GetEntityCoords(ped)
+    const garageDetail = getGarage(garage)
 
-            garages.map(m => m.location).forEach(garage => {
-                const distance = GetDistanceBetweenCoords(garage.x, garage.y, garage.z, x, y, z, true)
-                if(distance <= f(5)){
-                    SetNotificationMessage("CHAR_CARSITE3", "CHAR_CARSITE3", false, 4, "seja bem vindo", "Bem vindo")
-                    DrawNotification(true,false)
-                }
+    //desenha os marcadores caso esteja em uma mecânica
+    drawGarageMarkers(garageDetail.markers)
 
-            })
+    if (!isInGarageMarkerArea(garageDetail.markers)) {
 
-        }
     }
 }
+
+
+
+
+
+isInGarage
+    .pipe(
+        //distingue enventos de entrada e saida do carro da garagem
+        distinctUntilChanged()
+    )
+    .subscribe(value => {
+        //faz alguma coisa
+        console.log('is in garage?', value)
+    })
+
 
 // lab
 setTick(startup)
