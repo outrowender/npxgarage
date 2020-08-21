@@ -2,13 +2,16 @@ import { BehaviorSubject } from 'rxjs'
 import { distinctUntilChanged } from 'rxjs/operators'
 import { drawGarageMarkers, getGarageInArea, getGarage, isInGarageMarkerArea, isPedInGarageWithaCar } from './src/garage'
 import * as NativeUI from '../lib/nativeui/NativeUi';
+import { startMenu } from './src/menu';
 
 var isInNearGarage = new BehaviorSubject<boolean>(false)
 var isInGarage = new BehaviorSubject<boolean>(false)
 var isMechanic = false
+var isCustomizing = false
 
 //o inicio do frame
 async function startup() {
+    if (isCustomizing) return
 
     //a cada frame verifica se o pedestre está em um carro e próxino a uma mecanica
     isInNearGarage.next(isPedInGarageWithaCar())
@@ -22,8 +25,8 @@ async function startup() {
 
     if (isInGarage.value == true) {
 
-        if (IsControlJustPressed(1, 201)) {
-            console.log('apertou enter')
+        if (IsControlJustPressed(1, 46)) {
+            console.log('apertou E')
             emitNet('canCustomizeEvent')
         }
     }
@@ -61,51 +64,29 @@ onNet('userIsMechanicEventHandler', value => {
     console.log(`userIsMechanicEventHandler: ${value.isMechanic}`)
 
     isMechanic = value.isMechanic
+
+
+    SetNotificationTextEntry('STRING')
+    AddTextComponentString('venha customizar com a gente')
+    DrawNotification(false, false)
 })
 
 onNet('canCustomizeEventHandler', value => {
     console.log(`canCustomizeEventHandler: ${value.canCustomize}`)
 
+    if (!value.canCustomize) return
+
+    isCustomizing = true
+
     //SetPlayerControl(PlayerId(), false, 256)
-
-    const menu = new NativeUI.Menu("Wenders Custom", "customiza essa merda ai", new NativeUI.Point(50, 50));
-
-
-    // Instructional buttons
-    let respectButton = new NativeUI.InstructionalButton("To pay respect", 0, "F");
-    menu.AddInstructionalButton(respectButton);
-
-    // Menu Items
-    menu.AddItem(new NativeUI.UIMenuListItem(
-        "List Item",
-        "Description for List Item",
-        new NativeUI.ItemsCollection(["Item 1", "Item 2", "Item 3"])
-    ));
-
-    menu.AddItem(new NativeUI.UIMenuSliderItem(
-        "Slider Item",
-        ["Fugiat", "pariatur", "consectetur", "ex", "duis", "magna", "nostrud", "et", "dolor", "laboris"],
-        5,
-        "Fugiat pariatur consectetur ex duis magna nostrud et dolor laboris est do pariatur amet sint.",
-        true
-    ));
-
-    menu.AddItem(new NativeUI.UIMenuCheckboxItem(
-        "Checkbox Item",
-        false,
-        "Fugiat pariatur consectetur ex duis magna nostrud et dolor laboris est do pariatur amet sint."
-    ));
-
-    menu.AddItem(new NativeUI.UIMenuItem(
-        "Dumb menu item",
-        "Just a menu item description"
-    ));
-
-    menu.Open()
-
-
     DisplayRadar(false)
 
+    Wait(500)
+    startMenu((onclose) => {
+        isCustomizing = false
+        //SetPlayerControl(PlayerId(), true, 256)
+        DisplayRadar(true)
+    })
 
 })
 

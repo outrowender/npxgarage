@@ -1,41 +1,6 @@
 import { garages } from "../../config"
 import { f } from "../../utils";
 
-export class Garage {
-    id: string
-    name: string
-    location: Location
-    distance?: number
-    markers: Location[]
-
-    constructor(id, name, location, markers, entity) {
-        id = id
-        name = name
-        location = location
-        markers = markers
-
-        this.updateDistances(location, markers, entity)
-    }
-
-    updateDistances(entity, location, markers) {
-        const [eX, eY, eZ] = GetEntityCoords(entity)
-
-        this.distance = GetDistanceBetweenCoords(location.x, location.y, location.z, eX, eY, eZ, false)
-
-        this.markers.map(marker => {
-            return {
-                distance: GetDistanceBetweenCoords(marker.x, marker.y, marker.z, eX, eY, eZ, false),
-            }
-        })
-    }
-
-    drawMarkers() {
-        this.markers.forEach(mark =>
-            drawGarageMarker(mark.x, mark.y, mark.z)
-        )
-    }
-}
-
 /**
 *  check is player next to a garage with a car
 * @returns boolean if is with a car in a garage
@@ -43,10 +8,9 @@ export class Garage {
 export function isPedInGarageWithaCar(): boolean {
     const ped = PlayerPedId()
     const veh = GetVehiclePedIsUsing(ped)
-    const entityModel = GetEntityModel(veh)
 
     if (!IsPedAPlayer(ped) && !IsPedSittingInAnyVehicle(ped)) return false
-    if (!IsThisModelACar(entityModel)) return false
+    if (!IsThisModelACar(GetEntityModel(veh))) return false
 
     return isInGarageArea(ped)
 }
